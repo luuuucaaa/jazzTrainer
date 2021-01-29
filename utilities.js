@@ -1,40 +1,60 @@
+var isDisplaySolution = true;
 var isChords7Task = true, isChords9Task = false, isChords11Task = false, isChords13Task = false;
 var isScalesMajorTask = false, isScalesHarmonicMinorTask = false, isScalesMelodicMinorTask = false, isScalesHarmonicMajorTask = false;
+var isProgressions251Task = false;
+var displaySolutionCheckbox;
 var chords7Checkbox, chords9Checkbox, chords11Checkbox, chords13Checkbox;
 var scalesMajorCheckbox, scalesMelodicMinorCheckbox, scalesHarmonicMinorCheckbox, scalesHarmonicMajorCheckbox;
+var progressions251Checkbox;
 
 function createCheckboxes(x, y) {
-  chords7Checkbox = createCheckbox('7th Chords', true);
+  displaySolutionCheckbox = createCheckbox('Display Solution', isDisplaySolution);
+  displaySolutionCheckbox.position(x, y + 100);
+  displaySolutionCheckbox.changed(checkDisplaySolution);
+
+  chords7Checkbox = createCheckbox('7th Chords', isChords7Task);
   chords7Checkbox.position(x, y);
   chords7Checkbox.changed(checkChords7);
 
-  chords9Checkbox = createCheckbox('9th Chords', false);
+  chords9Checkbox = createCheckbox('9th Chords', isChords9Task);
   chords9Checkbox.position(x, y + 20);
   chords9Checkbox.changed(checkChords9);
 
-  chords11Checkbox = createCheckbox('11th Chords', false);
+  chords11Checkbox = createCheckbox('11th Chords', isChords11Task);
   chords11Checkbox.position(x, y + 40);
   chords11Checkbox.changed(checkChords11);
 
-  chords13Checkbox = createCheckbox('13th Chords', false);
+  chords13Checkbox = createCheckbox('13th Chords', isChords13Task);
   chords13Checkbox.position(x, y + 60);
   chords13Checkbox.changed(checkChords13);
 
-  scalesMajorCheckbox = createCheckbox('Major Modes', false);
-  scalesMajorCheckbox.position(x + 180, y);
+  scalesMajorCheckbox = createCheckbox('Major Modes', isScalesMajorTask);
+  scalesMajorCheckbox.position(x + 200, y);
   scalesMajorCheckbox.changed(checkScalesMajor);
 
-  scalesMelodicMinorCheckbox = createCheckbox('Melodic Minor Modes', false);
-  scalesMelodicMinorCheckbox.position(x + 180, y + 20);
+  scalesMelodicMinorCheckbox = createCheckbox('Melodic Minor Modes', isScalesMelodicMinorTask);
+  scalesMelodicMinorCheckbox.position(x + 200, y + 20);
   scalesMelodicMinorCheckbox.changed(checkScalesMelodicMinor);
 
-  scalesHarmonicMinorCheckbox = createCheckbox('Harmonic Minor Modes', false);
-  scalesHarmonicMinorCheckbox.position(x + 180, y + 40);
+  scalesHarmonicMinorCheckbox = createCheckbox('Harmonic Minor Modes', isScalesHarmonicMinorTask);
+  scalesHarmonicMinorCheckbox.position(x + 200, y + 40);
   scalesHarmonicMinorCheckbox.changed(checkScalesHarmonicMinor);
 
-  scalesHarmonicMajorCheckbox = createCheckbox('Harmonic Major Modes', false);
-  scalesHarmonicMajorCheckbox.position(x + 180, y + 60);
+  scalesHarmonicMajorCheckbox = createCheckbox('Harmonic Major Modes', isScalesHarmonicMajorTask);
+  scalesHarmonicMajorCheckbox.position(x + 200, y + 60);
   scalesHarmonicMajorCheckbox.changed(checkScalesHarmonicMajor);
+
+  progressions251Checkbox = createCheckbox('ii-V-I Progressions', isProgressions251Task);
+  progressions251Checkbox.position(x + 400, y);
+  progressions251Checkbox.changed(checkProgressions251);
+}
+
+function checkDisplaySolution() {
+  if (!isDisplaySolution) {
+    isDisplaySolution = true;
+  } else {
+    isDisplaySolution = false;
+  }
 }
 
 function checkChords7() {
@@ -117,6 +137,16 @@ function checkScalesHarmonicMajor() {
   }
 }
 
+function checkProgressions251() {
+  if (!isProgressions251Task) {
+    taskTypeIdStack.push(8);
+    isProgressions251Task = true;
+  } else {
+    removeItemOnce(taskTypeIdStack, 8);
+    isProgressions251Task = false;
+  }
+}
+
 function removeItemOnce(arr, value) {
   var index = arr.indexOf(value);
   if (index > -1) {
@@ -129,8 +159,15 @@ function midinoteListener(input) {
   input.addListener('noteon', "all", function (e) {
       var eNumber = WebMidi.noteNameToNumber(e.note.name + e.note.octave);
       noteNumberStack.push(eNumber);
+      noteNumberQueue.push(eNumber);
+      if (noteNumberQueue.length > 12) {
+        noteNumberQueue.shift();
+      }
       noteNameStack.push(e.note.name);
       noteNameQueue.push(e.note.name);
+      if (noteNameQueue.length > 12) {
+        noteNameQueue.shift();
+      }
       keyboard.keys[eNumber - 21].isPressed = true;
     }
   );

@@ -1,16 +1,19 @@
+var timeCounter;
+
 class Task{
   constructor(taskType, dictSource, taskDisplayX, taskDisplayY) {
     this.taskType = taskType; // keyword for task type ('chord', 'chordProgression', 'scale', 'chordWithScale')
     this.dictSource = dictSource; // id for dictionary item ('chords7', 'chords9', 'chords11', 'chords13', 'scalesChurch', ...)
     this.dictPath = 'dict.' + this.dictSource;
-    this.taskId = undefined;
+    // this.taskId = undefined;
     this.task = undefined;
     this.solution = undefined;
     this.options = undefined;
     this.isTask = false;
     this.isTaskSolved = false;
     this.timeCounter = 0;
-    this.checkAnswerDelay = 1;
+    this.checkAnswerDelayChords = 1;
+    this.checkAnswerDelayProgressions = 0.5;
 
     this.taskDisplayX = taskDisplayX;
     this.taskDisplayY = taskDisplayY;
@@ -20,20 +23,24 @@ class Task{
     if (!this.isTask) {
       if (this.taskType == 'chord') {
 
-        this.taskId = int(random(eval(this.dictPath + '.length')));
-        this.task = eval(this.dictPath + '[' + this.taskId + '].name');
-        this.solution = eval(this.dictPath + '[' + this.taskId + '].notes');
-        this.options = eval(this.dictPath + '[' + this.taskId + '].optNotes');
+        var randomChord = getRandomChord(this.dictPath);
+        this.task = randomChord[1];
+        this.solution = randomChord[2];
+        this.options = randomChord[3];
 
       } else if (this.taskType == 'chordProgression') {
 
-        console.log('Task type not implemented yet.');
+        var chordProgression = getChordProgressionInRandomKey(this.dictSource); // dictSource gets used as progression name
+        this.task = chordProgression[0];
+        this.solution = chordProgression[1];
+        this.options = chordProgression[2];
 
       } else if (this.taskType == 'scale') {
 
-        this.taskId = int(random(eval(this.dictPath + '.length')));
-        this.task = eval(this.dictPath + '[' + this.taskId + '].name');
-        this.solution = eval(this.dictPath + '[' + this.taskId + '].notes');
+        var randomScale = getRandomScale(this.dictPath);
+        this.task = randomScale[0];
+        this.solution = randomScale[1];
+        this.options = randomScale[2];
 
       } else if (this.taskType == 'chordWithScale') {
 
@@ -51,51 +58,68 @@ class Task{
     text(this.task, this.taskDisplayX, this.taskDisplayY);
   }
 
-  checkAnswer(answerStack, answerQueue) {
+  checkAnswer(answerStack, answerQueue, numberStack, numberQueue) {
     this.answerStack = answerStack;
     this.answerQueue = answerQueue;
+    this.numberStack = numberStack;
+    this.numberQueue = numberQueue;
 
     if (this.isTask) {
       var isRight = false;
 
       if (this.taskType == 'chord') {
 
-        var answerStackSorted = this.answerStack.sort();
-        var solutionSorted = this.solution.sort();
+        if (checkChordAnswer(this.answerStack, this.solution, this.options, this.checkAnswerDelayChords, this.numberStack)) {
+          this.isTaskSolved = true;
+          this.isTask = false;
+        };
 
-        var difference = arrayDifference(answerStackSorted, solutionSorted);
-        isRight = checker(this.options, difference) && answerStackSorted.length >= solutionSorted.length - this.options.length;
-
-        if (isRight) {
-          this.timeCounter++;
-          if (this.timeCounter > this.checkAnswerDelay * frameRate()) {
-            this.isTaskSolved = true;
-            this.isTask = false;
-          }
-        } else {
-          this.timeCounter = 0;
+        if (isDisplaySolution) {
+          displayChordSolution(this.solution, this.options, this.taskDisplayX, this.taskDisplayY + 40);
         }
 
       } else if (this.taskType == 'chordProgression') {
 
-        console.log('Task type not implemented yet.');
+        // if (checkChordProgressionAnswer(this.answerStack, this.solution, this.options, this.checkAnswerDelayChords, this.numberStack)) {
+        //   this.isTaskSolved = true;
+        //   this.isTask = false;
+        // };
+        //
+        // if (isDisplaySolution) {
+        //   displayChordProgressionSolution(this.solution, this.options, this.taskDisplayX, this.taskDisplayY + 40);
+        // }
+
+        // if (checkChordAnswer(this.answerStack, this.solution[0], this.options[0], this.checkAnswerDelayChords)) {
+        //   this.is2 = true;
+        // };
+        //
+        // if (checkChordAnswer(this.answerStack, this.solution[1], this.options[1], this.checkAnswerDelayChords)) {
+        //   this.is5 = true;
+        // };
+        //
+        // if (checkChordAnswer(this.answerStack, this.solution[2], this.options[2], this.checkAnswerDelayChords)) {
+        //   this.is1 = true;
+        // };
+
+        // if (!checker(this.solution[0], this.answerStack) && !checker(this.solution[1], this.answerStack) && !checker(this.solution[2], this.answerStack)) {
+        //   is2 = false;
+        //   is5 = false;
+        //   is1 = false;
+        // }
+
+        // console.log(this.is2);
+        // console.log(this.is5);
+        // console.log(this.is1);
 
       } else if (this.taskType == 'scale') {
 
-        if (this.answerQueue.length > this.solution.length) {
-          this.answerQueue.shift();
-        }
-
-        var answerQueue = this.answerQueue;
-        var solution = this.solution;
-
-        isRight = (answerQueue.length == solution.length) && answerQueue.every(function(element, index) {
-          return element === solution[index];
-        });
-
-        if (isRight) {
+        if (checkScaleAnswer(this.answerQueue, this.solution, this.numberQueue)) {
           this.isTaskSolved = true;
           this.isTask = false;
+        };
+
+        if (isDisplaySolution) {
+          displayScaleSolution(this.solution, this.options, this.taskDisplayX, this.taskDisplayY + 40);
         }
 
       } else if (this.taskType == 'chordWithScale') {
@@ -109,6 +133,97 @@ class Task{
       }
     }
   }
+}
+
+function checkChordAnswer(answerStack, solution, options, checkAnswerDelay, numberStack) {
+  var answerStackSorted = answerStack.sort();
+  var solutionSorted = solution.slice(0).sort();
+
+  var difference = arrayDifference(answerStackSorted, solutionSorted);
+  var isRight = checker(options, difference) && answerStackSorted.length >= solutionSorted.length - options.length;
+
+  if (answerStack.length > 0) {
+
+    if (isRight) {
+      timeCounter++;
+      if (timeCounter > checkAnswerDelay * frameRate()) {
+        keyboard.validationFlash(numberStack, true);
+        timeCounter = -100;
+
+        return true;
+      }
+    }
+
+    if(!isRight) {
+      timeCounter++;
+      if (timeCounter > checkAnswerDelay * frameRate()) {
+        keyboard.validationFlash(numberStack, false);
+        timeCounter = -100;
+      }
+    }
+  } else {
+    timeCounter = 0;
+  }
+}
+
+function checkScaleAnswer(answerQueue, solution, numberQueue) {
+  if (answerQueue.length > solution.length) {
+    answerQueue.shift();
+    numberQueue.shift();
+  }
+
+  var isRight = (answerQueue.length == solution.length) && answerQueue.every(function(element, index) {
+    return element === solution[index];
+  });
+
+  if (isRight) {
+    keyboard.validationFlash(numberQueue, true);
+    return true;
+  }
+}
+
+function displayChordSolution(solution, options, posX, posY) {
+  var size = 24;
+  textSize(size);
+  noStroke();
+
+  posX -= (2 * solution.length * size) / 2 - size;
+  for (var i = 0; i < solution.length; i++) {
+
+    if (options.includes(solution[i])) {
+      fill(color(52, 149, 235));
+    } else {
+      fill(color(69, 161, 35));
+    }
+
+    text(solution[i], posX, posY);
+    posX += 2 * size;
+  }
+  textSize(80);
+  strokeWeight(1);
+  fill(0);
+}
+
+function displayScaleSolution(solution, options, posX, posY) {
+  var size = 24;
+  textSize(size);
+  noStroke();
+
+  posX -= (2 * solution.length * size) / 2 - size;
+  for (var i = 0; i < solution.length; i++) {
+
+    if (options == solution[i]) {
+      fill(color(214, 71, 24));
+    } else {
+      fill(color(52, 149, 235));
+    }
+
+    text(solution[i], posX, posY);
+    posX += 2 * size;
+  }
+  textSize(80);
+  strokeWeight(1);
+  fill(0);
 }
 
 let checker = (arr, target) => target.every(v => arr.includes(v));
