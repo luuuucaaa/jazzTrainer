@@ -5,7 +5,6 @@ class Task{
     this.taskType = taskType; // keyword for task type ('chord', 'chordProgression', 'scale', 'chordWithScale')
     this.dictSource = dictSource; // id for dictionary item ('chords7', 'chords9', 'chords11', 'chords13', 'scalesChurch', ...)
     this.dictPath = 'dict.' + this.dictSource;
-    // this.taskId = undefined;
     this.task = undefined;
     this.solution = undefined;
     this.options = undefined;
@@ -31,9 +30,13 @@ class Task{
       } else if (this.taskType == 'chordProgression') {
 
         var chordProgression = getChordProgressionInRandomKey(this.dictSource); // dictSource gets used as progression name
-        this.task = chordProgression[0];
-        this.solution = chordProgression[1];
-        this.options = chordProgression[2];
+        this.solutionChords = chordProgression[0];
+        this.task = chordProgression[1];
+        this.solution = chordProgression[2];
+        this.options = chordProgression[3];
+
+        console.log(this.solutionChords);
+        console.log(this.solution);
 
       } else if (this.taskType == 'scale') {
 
@@ -80,36 +83,14 @@ class Task{
 
       } else if (this.taskType == 'chordProgression') {
 
-        // if (checkChordProgressionAnswer(this.answerStack, this.solution, this.options, this.checkAnswerDelayChords, this.numberStack)) {
-        //   this.isTaskSolved = true;
-        //   this.isTask = false;
-        // };
-        //
-        // if (isDisplaySolution) {
-        //   displayChordProgressionSolution(this.solution, this.options, this.taskDisplayX, this.taskDisplayY + 40);
-        // }
+        if (checkChordProgressionAnswer(this.answerStack, this.solution, this.options, this.checkAnswerDelayChords, this.numberStack)) {
+          this.isTaskSolved = true;
+          this.isTask = false;
+        };
 
-        // if (checkChordAnswer(this.answerStack, this.solution[0], this.options[0], this.checkAnswerDelayChords)) {
-        //   this.is2 = true;
-        // };
-        //
-        // if (checkChordAnswer(this.answerStack, this.solution[1], this.options[1], this.checkAnswerDelayChords)) {
-        //   this.is5 = true;
-        // };
-        //
-        // if (checkChordAnswer(this.answerStack, this.solution[2], this.options[2], this.checkAnswerDelayChords)) {
-        //   this.is1 = true;
-        // };
-
-        // if (!checker(this.solution[0], this.answerStack) && !checker(this.solution[1], this.answerStack) && !checker(this.solution[2], this.answerStack)) {
-        //   is2 = false;
-        //   is5 = false;
-        //   is1 = false;
-        // }
-
-        // console.log(this.is2);
-        // console.log(this.is5);
-        // console.log(this.is1);
+        if (isDisplaySolution) {
+          displayChordProgressionSolution(this.solutionChords, this.taskDisplayX, this.taskDisplayY + 40);
+        }
 
       } else if (this.taskType == 'scale') {
 
@@ -182,6 +163,36 @@ function checkScaleAnswer(answerQueue, solution, numberQueue) {
   }
 }
 
+function checkChordAnswerInProgression(answerStack, solution, options, numberStack) {
+  var answerStackSorted = answerStack.sort();
+  var solutionSorted = solution.slice(0).sort();
+
+  var difference = arrayDifference(answerStackSorted, solutionSorted);
+  var isRight = checker(options, difference) && answerStackSorted.length >= solutionSorted.length - options.length;
+
+  if (answerStack.length > 0) {
+
+    if (isRight) {
+      return true;
+    }
+  }
+}
+
+var chordProgressionIndex = 0;
+function checkChordProgressionAnswer(answerStack, solution, options, checkAnswerDelayChords, numberStack) {
+  var solutionFlat = solution.flat();
+
+  if (checkChordAnswerInProgression(answerStack, solution[chordProgressionIndex], options[chordProgressionIndex], numberStack)) {
+    chordProgressionIndex++;
+  };
+
+  if (chordProgressionIndex > solution.length - 1) {
+    chordProgressionIndex = 0;
+    keyboard.validationFlash(numberStack, true);
+    return true;
+  }
+}
+
 function displayChordSolution(solution, options, posX, posY) {
   var size = 24;
   textSize(size);
@@ -220,6 +231,28 @@ function displayScaleSolution(solution, options, posX, posY) {
 
     text(solution[i], posX, posY);
     posX += 2 * size;
+  }
+  textSize(80);
+  strokeWeight(1);
+  fill(0);
+}
+
+function displayChordProgressionSolution(solutionChords, posX, posY) {
+  var size = 24;
+  textSize(size);
+  noStroke();
+
+  posX -= (4 * solutionChords.length * size) / 2 - (2 * size);
+  for (var i = 0; i < solutionChords.length; i++) {
+
+    if (i < solutionChords.length - 1) {
+      fill(color(52, 149, 235));
+    } else {
+      fill(color(color(69, 161, 35)));
+    }
+
+    text(solutionChords[i].name, posX, posY);
+    posX += 4 * size;
   }
   textSize(80);
   strokeWeight(1);

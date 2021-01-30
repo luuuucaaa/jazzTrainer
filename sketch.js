@@ -19,13 +19,14 @@ WebMidi.enable(function (err) {
   });
 });
 
+var isWebMidiConnected = false;
 var frame;
 var keyboard, dict;
 var noteNumberStack = [], noteNumberQueue = [], noteNameStack = [], noteNameQueue = [];
 var chords7Task, chords9Task, chords11Task, chords13Task;
 var scalesMajorTask, scalesHarmonicMinorTask, scalesMelodicMinorTask, scalesHarmonicMajorTask;
 var progressions251Task;
-var isTask = false, taskTypeId, taskTypeIdStack = [0];
+var isTask = false, taskTypeId, taskTypeIdStack = [8];
 
 function preload() {
   font = loadFont('assets/SeanHand.ttf'); // i have to load something, otherwise the script doesnt work? maybe because i need the time delay?
@@ -39,7 +40,7 @@ function setup() {
 
   midinoteListener(WebMidi.getInputByName("FP-10 Bluetooth"));
 
-  keyboard = new Keyboard(0, 0, width, 100, color(52, 149, 235), color(69, 161, 35), color(214, 71, 24));
+  keyboard = new Keyboard(0, 0, width, 200, color(52, 149, 235), color(69, 161, 35), color(214, 71, 24));
   createCheckboxes(20, keyboard.h + 20);
 
   chords7Task = new Task('chord', 'chords.chords7', width/2, keyboard.h + 90);

@@ -1,7 +1,7 @@
 var isDisplaySolution = true;
-var isChords7Task = true, isChords9Task = false, isChords11Task = false, isChords13Task = false;
+var isChords7Task = false, isChords9Task = false, isChords11Task = false, isChords13Task = false;
 var isScalesMajorTask = false, isScalesHarmonicMinorTask = false, isScalesMelodicMinorTask = false, isScalesHarmonicMajorTask = false;
-var isProgressions251Task = false;
+var isProgressions251Task = true;
 var displaySolutionCheckbox;
 var chords7Checkbox, chords9Checkbox, chords11Checkbox, chords13Checkbox;
 var scalesMajorCheckbox, scalesMelodicMinorCheckbox, scalesHarmonicMinorCheckbox, scalesHarmonicMajorCheckbox;

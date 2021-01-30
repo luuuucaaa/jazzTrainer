@@ -269,22 +269,19 @@ function getChordProgressionInRandomKey(chordProgressionName) {
   var id = int(random(finalChordPool.length));
   var finalChord = finalChordPool[id];
 
+  var semitonesRanged = semitones.slice(0);
   for (var i = 0; i < semitones.length; i++) {
     if (semitones[i] + finalChord.rootNoteIndex > 11) {
-      semitones[i] -= 12;
+      semitonesRanged[i] = semitones[i] - 12;
     }
   }
 
   var solutionChords = [];
   for (var i = 0; i < semitones.length - 1; i++) {
-    solutionChords.push(dict.chords.chords7.filter(x => x.chordTypeId == chordName2chordTypeId(chordTypes[i])
-                                                  && x.rootNoteIndex == finalChord.rootNoteIndex + semitones[i]));
-    solutionChords.push(dict.chords.chords9.filter(x => x.chordTypeId == chordName2chordTypeId(chordTypes[i])
-                                                  && x.rootNoteIndex == finalChord.rootNoteIndex + semitones[i]));
-    solutionChords.push(dict.chords.chords11.filter(x => x.chordTypeId == chordName2chordTypeId(chordTypes[i])
-                                                  && x.rootNoteIndex == finalChord.rootNoteIndex + semitones[i]));
-    solutionChords.push(dict.chords.chords13.filter(x => x.chordTypeId == chordName2chordTypeId(chordTypes[i])
-                                                  && x.rootNoteIndex == finalChord.rootNoteIndex + semitones[i]));
+    solutionChords.push(dict.chords.chords7.filter(x => x.chordTypeId == chordName2chordTypeId(chordTypes[i]) && x.rootNoteIndex == finalChord.rootNoteIndex + semitonesRanged[i]));
+    solutionChords.push(dict.chords.chords9.filter(x => x.chordTypeId == chordName2chordTypeId(chordTypes[i]) && x.rootNoteIndex == finalChord.rootNoteIndex + semitonesRanged[i]));
+    solutionChords.push(dict.chords.chords11.filter(x => x.chordTypeId == chordName2chordTypeId(chordTypes[i]) && x.rootNoteIndex == finalChord.rootNoteIndex + semitonesRanged[i]));
+    solutionChords.push(dict.chords.chords13.filter(x => x.chordTypeId == chordName2chordTypeId(chordTypes[i]) && x.rootNoteIndex == finalChord.rootNoteIndex + semitonesRanged[i]));
   }
 
   solutionChords = solutionChords.flat();
@@ -297,7 +294,7 @@ function getChordProgressionInRandomKey(chordProgressionName) {
 
   task = progression[0] + ' to ' + finalChord.name;
 
-  return [task, solution, options];
+  return [solutionChords, task, solution, options];
 }
 
 function searchChord(dictPath, rootNoteIndex, chordName) {
