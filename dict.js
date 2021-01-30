@@ -12,7 +12,7 @@ function getJazzDict() {
 
   var jazzDict = jazzDictObject.get();
 
-  console.log(jazzDict);
+  // console.log(jazzDict);
   return jazzDict;
 }
 

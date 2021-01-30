@@ -6,16 +6,16 @@ WebMidi.enable(function (err) {
 
   // Viewing available inputs and outputs
   console.log(WebMidi.inputs);
-  console.log(WebMidi.outputs);
+  // console.log(WebMidi.outputs);
 
   // Reacting when a new device becomes available
   WebMidi.addListener("connected", function(e) {
-    console.log(e);
+    // console.log(e);
   });
 
   // Reacting when a device becomes unavailable
   WebMidi.addListener("disconnected", function(e) {
-    console.log(e);
+    // console.log(e);
   });
 });
 
@@ -38,10 +38,8 @@ function setup() {
   textAlign(CENTER);
   textSize(80);
 
-  midinoteListener(WebMidi.getInputByName("FP-10 Bluetooth"));
-
   keyboard = new Keyboard(0, 0, width, 200, color(52, 149, 235), color(69, 161, 35), color(214, 71, 24));
-  createCheckboxes(20, keyboard.h + 20);
+  createGUI(20, keyboard.h + 20);
 
   chords7Task = new Task('chord', 'chords.chords7', width/2, keyboard.h + 90);
   chords9Task = new Task('chord', 'chords.chords9', width/2, keyboard.h + 90);
@@ -59,6 +57,8 @@ function setup() {
 }
 
 function draw() {
+
+  midinoteListener();
   background(255);
   keyboard.display();
   getTask();

@@ -35,9 +35,6 @@ class Task{
         this.solution = chordProgression[2];
         this.options = chordProgression[3];
 
-        console.log(this.solutionChords);
-        console.log(this.solution);
-
       } else if (this.taskType == 'scale') {
 
         var randomScale = getRandomScale(this.dictPath);

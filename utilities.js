@@ -1,3 +1,4 @@
+var isInput = false, midiInput, inputSubmit;
 var isDisplaySolution = true;
 var isChords7Task = false, isChords9Task = false, isChords11Task = false, isChords13Task = false;
 var isScalesMajorTask = false, isScalesHarmonicMinorTask = false, isScalesMelodicMinorTask = false, isScalesHarmonicMajorTask = false;
@@ -7,9 +8,15 @@ var chords7Checkbox, chords9Checkbox, chords11Checkbox, chords13Checkbox;
 var scalesMajorCheckbox, scalesMelodicMinorCheckbox, scalesHarmonicMinorCheckbox, scalesHarmonicMajorCheckbox;
 var progressions251Checkbox;
 
-function createCheckboxes(x, y) {
+function createGUI(x, y) {
+  midiInput = createInput();
+  midiInput.position(x, y + 100);
+  inputSubmit = createButton("Submit MIDI-Input");
+  inputSubmit.position(x + 160, y + 100);
+  inputSubmit.mousePressed(inputSubmission);
+
   displaySolutionCheckbox = createCheckbox('Display Solution', isDisplaySolution);
-  displaySolutionCheckbox.position(x, y + 100);
+  displaySolutionCheckbox.position(x + 400, y + 100);
   displaySolutionCheckbox.changed(checkDisplaySolution);
 
   chords7Checkbox = createCheckbox('7th Chords', isChords7Task);
@@ -47,6 +54,10 @@ function createCheckboxes(x, y) {
   progressions251Checkbox = createCheckbox('ii-V-I Progressions', isProgressions251Task);
   progressions251Checkbox.position(x + 400, y);
   progressions251Checkbox.changed(checkProgressions251);
+}
+
+function inputSubmission() {
+  isInput = true;
 }
 
 function checkDisplaySolution() {
@@ -155,28 +166,34 @@ function removeItemOnce(arr, value) {
   return arr;
 }
 
-function midinoteListener(input) {
-  input.addListener('noteon', "all", function (e) {
-      var eNumber = WebMidi.noteNameToNumber(e.note.name + e.note.octave);
-      noteNumberStack.push(eNumber);
-      noteNumberQueue.push(eNumber);
-      if (noteNumberQueue.length > 12) {
-        noteNumberQueue.shift();
+function midinoteListener() {
+  if (isInput) {
+    var inputName = midiInput.value();
+    console.log(inputName);
+    input = WebMidi.getInputByName(inputName);
+    input.addListener('noteon', "all", function (e) {
+        var eNumber = WebMidi.noteNameToNumber(e.note.name + e.note.octave);
+        noteNumberStack.push(eNumber);
+        noteNumberQueue.push(eNumber);
+        if (noteNumberQueue.length > 12) {
+          noteNumberQueue.shift();
+        }
+        noteNameStack.push(e.note.name);
+        noteNameQueue.push(e.note.name);
+        if (noteNameQueue.length > 12) {
+          noteNameQueue.shift();
+        }
+        keyboard.keys[eNumber - 21].isPressed = true;
       }
-      noteNameStack.push(e.note.name);
-      noteNameQueue.push(e.note.name);
-      if (noteNameQueue.length > 12) {
-        noteNameQueue.shift();
-      }
-      keyboard.keys[eNumber - 21].isPressed = true;
-    }
-  );
+    );
 
-  input.addListener('noteoff', "all", function (e) {
-      var eNumber = WebMidi.noteNameToNumber(e.note.name + e.note.octave);
-      noteNumberStack.pop(eNumber);
-      noteNameStack.pop(e.note.name);
-      keyboard.keys[eNumber - 21].isPressed = false;
-    }
-  );
+    input.addListener('noteoff', "all", function (e) {
+        var eNumber = WebMidi.noteNameToNumber(e.note.name + e.note.octave);
+        noteNumberStack.pop(eNumber);
+        noteNameStack.pop(e.note.name);
+        keyboard.keys[eNumber - 21].isPressed = false;
+      }
+    );
+    isInput = false;
+  }
 }
